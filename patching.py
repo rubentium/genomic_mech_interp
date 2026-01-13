@@ -179,61 +179,6 @@ class NCBISequenceFetcher:
             flanking_bp=flanking_bp
         )
 
-
-# ============================================================================
-# Forward Hook System for Activation Capture
-# ============================================================================
-
-class ActivationHook:
-    """
-    A PyTorch forward hook that captures and optionally modifies layer activations.
-    
-    This class allows us to:
-    1. Record activations during forward pass
-    2. Replace activations with patched values
-    """
-    
-    def __init__(self):
-        """Initialize the hook with empty activation storage."""
-        self.activations: Optional[torch.Tensor] = None
-        self.replace_with: Optional[torch.Tensor] = None
-    
-    def __call__(self, module: nn.Module, input: Tuple, output) -> Optional[Tuple]:
-        """
-        Hook function called during forward pass.
-        
-        Args:
-            module: The module being hooked
-            input: Input to the module (unused)
-            output: Output from the module (can be a tensor or tuple)
-            
-        Returns:
-            Modified output if replace_with is set, otherwise original output
-        """
-        # Handle both tensor and tuple outputs
-        if isinstance(output, tuple):
-            # Extract the main hidden state (first element of tuple)
-            self.activations = output[0].detach().clone()
-        else:
-            # Record the activation
-            self.activations = output.detach().clone()
-        
-        # If we have a replacement tensor, substitute it
-        if self.replace_with is not None:
-            if isinstance(output, tuple):
-                # Replace the first element (hidden state) with our patched version
-                return (self.replace_with,) + output[1:]
-            else:
-                return self.replace_with
-        
-        return output
-    
-    def reset(self):
-        """Reset stored activations and replacement tensor."""
-        self.activations = None
-        self.replace_with = None
-
-
 # ============================================================================
 # Inference Function with Output Capture
 # ============================================================================
@@ -541,7 +486,6 @@ def patch_activations(
     print(f"Genomic Activation Patching Analysis - Layer {target_layer}")
     print(f"{'='*70}")
     
-    # --- STEP 1-4: Standard Setup (Mapping and Baseline) ---
     clean_encoding = tokenizer(clean_sequence, return_tensors="pt", truncation=False).to(device)
     input_ids = clean_encoding.input_ids[0].tolist()
     tokens = tokenizer.convert_ids_to_tokens(input_ids)
@@ -568,7 +512,6 @@ def patch_activations(
     clean_logits = clean_output['logits'].detach()
     original_logit_diff = calculate_logit_difference(clean_logits, token_index, wt_token_id, mut_token_id, device)
 
-    # --- STEP 5 & 6: TARGETED PATCHING (The Fix) ---
     print(f"Applying patch at Layer {target_layer}...")
 
     def patch_hook_fn(module, input, output):
@@ -594,7 +537,6 @@ def patch_activations(
         # ALWAYS remove the hook, even if inference crashes
         handle.remove()
 
-    # --- STEP 7-8: Final Analysis ---
     patched_logit_diff = calculate_logit_difference(patched_logits, token_index, wt_token_id, mut_token_id, device)
     indirect_effect = original_logit_diff - patched_logit_diff
 
@@ -630,12 +572,12 @@ def analyze_all_layers(
     num_layers = model.config.num_hidden_layers
     layer_effects = {}
     
-    # --- CRITICAL STEP: Capture the mutant 'world' once ---
+    # --- Capture the mutant 'world' once ---
     print("Pre-capturing mutant activations for all layers...")
     corrupt_output = run_inference(model, tokenizer, corrupt_sequence, device)
     all_corrupt_states = corrupt_output['hidden_states'] 
 
-    # --- LOOP: Now pass those states into the patching function ---
+    # --- Now pass those states into the patching function ---
     for layer_idx in range(num_layers):
         result = patch_activations(
             model, 

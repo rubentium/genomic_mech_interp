@@ -44,10 +44,10 @@ wheels/
 huggingface_custom/
 
 # Generated outputs
-*.png
-*.pdf
-*.svg
-initial_results/
+# *.png
+# *.pdf
+# *.svg
+# results/
 
 # OS
 .DS_Store

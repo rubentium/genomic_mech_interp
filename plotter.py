@@ -8,6 +8,7 @@ This module contains all plotting and visualization functions for:
 - Logit comparisons
 """
 
+import os
 from typing import Dict, List, Optional
 
 import numpy as np
@@ -60,7 +61,9 @@ def plot_attention_heatmap(
     plt.xlabel("Key Position")
     plt.ylabel("Query Position")
     plt.tight_layout()
-    filename = f'{file_prefix}attention_layer_{layer_idx}.png' if file_prefix else f'attention_layer_{layer_idx}.png'
+    
+    os.makedirs('results', exist_ok=True)
+    filename = f'results/{file_prefix}attention_layer_{layer_idx}.png' if file_prefix else f'results/attention_layer_{layer_idx}.png'
     plt.savefig(filename, dpi=150, bbox_inches='tight')
     plt.close()
 
@@ -105,7 +108,9 @@ def plot_indirect_effects(
     plt.title("Mechanistic Interpretability: Indirect Effect by Layer", fontsize=14)
     plt.grid(axis='y', alpha=0.3)
     plt.tight_layout()
-    filename = f'{file_prefix}indirect_effects_summary.png' if file_prefix else 'indirect_effects_summary.png'
+    
+    os.makedirs('results', exist_ok=True)
+    filename = f'results/{file_prefix}indirect_effects_summary.png' if file_prefix else 'results/indirect_effects_summary.png'
     plt.savefig(filename, dpi=150, bbox_inches='tight')
     plt.close()
 
@@ -169,7 +174,9 @@ def plot_head_effects(
         )
     
     plt.tight_layout()
-    filename = f'{file_prefix}head_effects_layer_{layer_idx}.png' if file_prefix else f'head_effects_layer_{layer_idx}.png'
+    
+    os.makedirs('results', exist_ok=True)
+    filename = f'results/{file_prefix}head_effects_layer_{layer_idx}.png' if file_prefix else f'results/head_effects_layer_{layer_idx}.png'
     plt.savefig(filename, dpi=150, bbox_inches='tight')
     plt.close()
     
@@ -228,6 +235,8 @@ def compare_logits_by_position(
     plt.legend()
     plt.grid(axis='y', alpha=0.3)
     plt.tight_layout()
-    filename = f'{file_prefix}logits_comparison.png' if file_prefix else 'logits_comparison.png'
+    
+    os.makedirs('results', exist_ok=True)
+    filename = f'results/{file_prefix}logits_comparison.png' if file_prefix else 'results/logits_comparison.png'
     plt.savefig(filename, dpi=150, bbox_inches='tight')
     plt.close()
