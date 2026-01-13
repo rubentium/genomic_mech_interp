@@ -175,8 +175,8 @@ If you use this code in your research, please cite:
 ```bibtex
 @software{genomic_mech_interp,
   title = {Mechanistic Interpretability for Nucleotide Transformer Models},
-  author = {Your Name},
-  year = {2026},
+  author = {Ruben Navasardyan},
+  year = {Jan. 2026},
   url = {https://github.com/yourusername/genomic-mech-interp}
 }
 ```
